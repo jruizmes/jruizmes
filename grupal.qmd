@@ -1,0 +1,116 @@
+---
+title: "Entrega grupal"
+author: "Javier Ruiz"
+format:
+  revealjs:
+    theme: [style.scss]
+    embed-resources: true
+execute: 
+  echo: true
+---
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(dplyr)
+library(glue)
+library(forcats)
+library(lubridate)
+```
+
+------------------------------------------------------------------------
+
+```{r}
+# NO TOQUES NADA
+election_data <- read_csv(file = "./data/datos_elecciones_brutos.csv")
+cod_mun <- read_csv(file = "./data/cod_mun.csv")
+surveys <- read_csv(file = "./data/historical_surveys.csv")
+abbrev <- read_csv(file = "./data/siglas.csv")
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#eliminar las columnas de election_data que tienen valores fijos (comprobado con unique):
+election_data <-election_data |>
+  select(-c(tipo_eleccion,codigo_distrito_electoral,vuelta))
+
+election_data<-election_data|> 
+  mutate(id_municipio = glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")) |> 
+  relocate(id_municipio, .before = everything())
+
+election_data <- election_data |> 
+  select(-c(codigo_ccaa,codigo_provincia,codigo_municipio))
+
+#eliminar columnas de surveys sin info + encuestas a pie de urna y anteriores a 2016
+surveys2 <- surveys|> select(-type_survey) |>
+  filter(exit_poll==FALSE) |> 
+  filter((field_date_to-field_date_from)>0) |> 
+  filter(size>=500 & !is.na(size)) |> 
+  filter(date_elec>'2016-1-1')
+```
+
+------------------------------------------------------------------------
+
+Convertimos a tidy:
+
+## Ítems obligatorios
+
+8.  Todo lo que no esté en alguno de los anteriores partidos debe ser correctamente reagrupado (y resumido) en `OTROS`
+
+9.  Las siglas deben ser usadas en las visualizaciones (ideas en <https://r-graph-gallery.com/>).
+
+10. Debes usar todos los archivos en algún momento.
+
+11. Debes descartar las encuestas que:
+
+```         
+-   se refieran a elecciones anteriores a 2008
+-   sean a pie de urna
+-   tamaño muestral desconocido o inferior a 500.
+-   tenga 1 día o menos de trabajo de campo.
+```
+
+------------------------------------------------------------------------
+
+## Ítems obligatorios
+
+12. Deberás responder obligatoriamente a las siguientes preguntas (más aquellas que consideres analizar para distinguirte del resto)
+
+-   ¿Qué partido fue el ganador en los municipios con más de 100.000 habitantes (censo) en cada una de las elecciones?
+
+-   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
+
+-   ¿A quién beneficia la baja participación?
+
+-   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
+
+------------------------------------------------------------------------
+
+## Ítems obligatorios
+
+-   ¿Cómo calibrar el error de las encuestas (recordemos que las encuestas son de intención de voto a nivel nacional)?
+
+-   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
+
+Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
+
+------------------------------------------------------------------------
+
+## Evaluación
+
+No se valorará más a quien haga más cosas.
+
+Más no siempre es mejor
+
+Se valorará la originalidad (en comparación con el resto de trabajos, ya sea en lo analizado, en el tema tratado, etc.), el cariño puesto en la entrega (el cariño en la vida es importante) y la relevancia de lo realizado.
+
+------------------------------------------------------------------------
+
+## Evaluación
+
+Una vez que tengas los elementos obligatorios de tu base de datos más o menos completos, piensa antes de escribir código: ¿qué podría ser interesante? ¿Qué necesito para obtener un resumen tanto numérico como visual?
+
+Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
+
+## Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.
